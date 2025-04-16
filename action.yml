@@ -1,0 +1,79 @@
+name: Jira Integration
+description: Github to Jira Integration Action
+author: 'drew.mercer@brandlive.com'
+inputs:
+  action:
+    description: 'Action to perform'
+    required: true
+  token: 
+    description: 'Jira API token in the form of user_email:api_token'
+    required: true
+  jira_url:
+    description: 'Jira URL of your instance'
+    required: true
+  project:
+    description: 'Jira project key'
+    required: true
+  issue_type:
+    description: 'Jira issue type'
+    required: false
+  summary:
+    description: 'Jira issue summary'
+    required: false
+  description:
+    description: 'Jira issue description'
+    required: false
+  priority:
+    description: 'Jira issue priority'
+    required: false
+
+runs:
+  using: "composite"
+  steps:
+    - id: create
+      if: ${{ inputs.action == 'create' }}
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const jiraUrl = '${{ inputs.jira_url }}';
+          const jiraToken = '${{ inputs.token }}';
+          const projectKey = '${{ inputs.project }}';
+          const issueType = '${{ inputs.issue_type }}';
+          const summary = '${{ inputs.summary }}';
+          const description = '${{ inputs.description }}';
+          const priority = '${{ inputs.priority }}';
+
+          // Construct the JSON payload for creating the Jira issue.
+          const payload = {
+            fields: {
+              project: {
+                key: projectKey
+              },
+              issuetype: {
+                name: issueType
+              },
+              summary: summary,
+              description: description,
+              priority: {
+                name: priority
+              }
+            }
+          };
+
+          // Use fetch to make the Jira API request.
+          const response = await fetch(`${jiraUrl}/rest/api/2/issue`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Basic ${Buffer.from(jiraToken).toString('base64')}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to create Jira issue: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          console.log(`Jira issue created successfully: ${data.key}`);
+          return data.key;
