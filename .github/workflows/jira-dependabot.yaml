@@ -1,6 +1,7 @@
 name: Dependabot Jira Integration
 
 on:
+  workflow_dispatch: # Allows manual triggering of the workflow
   pull_request:
     branches:
       - main # Or your default branch (e.g., main, master)
@@ -14,7 +15,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Create Jira Ticket
-        uses: brandlive1941/action-jira-integration@v1.0.0  # Use the latest version
+        uses: brandlive1941/action-jira-integration@main  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets

@@ -64,7 +64,7 @@ runs:
           const response = await fetch(`${jiraUrl}/rest/api/2/issue`, {
             method: 'POST',
             headers: {
-              'Authorization': `Basic ${Buffer.from(jiraToken).toString('base64')}`,
+              'Authorization': `Basic ${Buffer.from(jiraToken).toString('base64')`,
               'Content-Type': 'application/json'
             },
             body: JSON.stringify(payload)
