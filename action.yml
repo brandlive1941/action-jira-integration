@@ -34,46 +34,56 @@ runs:
       if: ${{ inputs.action == 'create' }}
       uses: actions/github-script@v6
       with:
-        script: |
-          const jiraUrl = '${{ inputs.jira_url }}';
-          const jiraToken = '${{ inputs.token }}';
-          const projectKey = '${{ inputs.project }}';
-          const issueType = '${{ inputs.issue_type }}';
-          const summary = '${{ inputs.summary }}';
-          const description = '${{ inputs.description }}';
-          const priority = '${{ inputs.priority }}';
+        run: |
+          issuetype_id="${{ inputs.issue_type }}"
+          project_id="${{ inputs.project }}"
+          priority_id="${{ inputs.priority }}"
+          description="${{ inputs.description }}"
+          summary="${{ inputs.summary }}"
+          template='{
 
-          // Construct the JSON payload for creating the Jira issue.
-          const payload = {
-            fields: {
-              project: {
-                key: projectKey
+            "fields": {
+              "summary": "%s",
+              "issuetype": {
+                "id": "%s"
               },
-              issuetype: {
-                name: issueType
+              "project": {
+                "id": "%s"
               },
-              summary: summary,
-              description: description,
-              priority: {
-                name: priority
+              "priority": {
+                "id": "%s"
+              },
+              
+              "description": {
+                "type": "doc",
+                "version": 1,
+                "content": [
+                  {
+                    "type": "paragraph",
+                    "content": [
+                      {
+                        "text": "%s",
+                        "type": "text"
+                      }
+                    ]
+                  }
+                ]
               }
             }
-          };
+          }'
 
-          // Use fetch to make the Jira API request.
-          const response = await fetch(`${jiraUrl}/rest/api/2/issue`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Basic ${Buffer.from(jiraToken).toString('base64')`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(payload)
-          });
-
-          if (!response.ok) {
-            throw new Error(`Failed to create Jira issue: ${response.statusText}`);
-          }
-
-          const data = await response.json();
-          console.log(`Jira issue created successfully: ${data.key}`);
-          return data.key;
+          payload=$(printf "$template" \
+                  "$summary" \
+                  "$issuetype_id" \
+                  "$project_id" \
+                  "$priority_id" \
+                  "$description")
+          auth=echo -n "${{ inputs.jira_token }}" | base64
+          curl -i -X POST \
+              -H "Authorization: Basic $auth" \ \
+              -H "Content-Type:application/json" \
+              -H "X-Atlassian-Token:no-check" \
+              "${{ inputs.jira_url }}" \
+              -d \
+              "$payload"
+              
