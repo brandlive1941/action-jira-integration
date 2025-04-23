@@ -1,6 +1,7 @@
 name: Dependabot Jira Integration
 
 on:
+  workflow_dispatch: # Allows manual triggering of the workflow
   pull_request:
     branches:
       - main # Or your default branch (e.g., main, master)
