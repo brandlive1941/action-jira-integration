@@ -76,7 +76,7 @@ runs:
               "$project_id" \
               "$priority_id" \
               "$description")
-      auth=echo -n "${{ inputs.jira_token }}" | base64
+      auth="echo -n ${{ inputs.jira_token }} | base64"
       curl -i -X POST \
           -H "Authorization: Basic $auth" \ \
           -H "Content-Type:application/json" \
