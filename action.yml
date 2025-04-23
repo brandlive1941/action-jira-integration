@@ -30,60 +30,58 @@ inputs:
 runs:
   using: "composite"
   steps:
-    - id: create
-      if: ${{ inputs.action == 'create' }}
-      uses: actions/github-script@v6
-      with:
-        run: |
-          issuetype_id="${{ inputs.issue_type }}"
-          project_id="${{ inputs.project }}"
-          priority_id="${{ inputs.priority }}"
-          description="${{ inputs.description }}"
-          summary="${{ inputs.summary }}"
-          template='{
+  - id: create
+    if: ${{ inputs.action == 'create' }}
+    run: |
+      issuetype_id="${{ inputs.issue_type }}"
+      project_id="${{ inputs.project }}"
+      priority_id="${{ inputs.priority }}"
+      description="${{ inputs.description }}"
+      summary="${{ inputs.summary }}"
+      template='{
 
-            "fields": {
-              "summary": "%s",
-              "issuetype": {
-                "id": "%s"
-              },
-              "project": {
-                "id": "%s"
-              },
-              "priority": {
-                "id": "%s"
-              },
-              
-              "description": {
-                "type": "doc",
-                "version": 1,
+        "fields": {
+          "summary": "%s",
+          "issuetype": {
+            "id": "%s"
+          },
+          "project": {
+            "id": "%s"
+          },
+          "priority": {
+            "id": "%s"
+          },
+          
+          "description": {
+            "type": "doc",
+            "version": 1,
+            "content": [
+              {
+                "type": "paragraph",
                 "content": [
                   {
-                    "type": "paragraph",
-                    "content": [
-                      {
-                        "text": "%s",
-                        "type": "text"
-                      }
-                    ]
+                    "text": "%s",
+                    "type": "text"
                   }
                 ]
               }
-            }
-          }'
+            ]
+          }
+        }
+      }'
 
-          payload=$(printf "$template" \
-                  "$summary" \
-                  "$issuetype_id" \
-                  "$project_id" \
-                  "$priority_id" \
-                  "$description")
-          auth=echo -n "${{ inputs.jira_token }}" | base64
-          curl -i -X POST \
-              -H "Authorization: Basic $auth" \ \
-              -H "Content-Type:application/json" \
-              -H "X-Atlassian-Token:no-check" \
-              "${{ inputs.jira_url }}" \
-              -d \
-              "$payload"
-              
+      payload=$(printf "$template" \
+              "$summary" \
+              "$issuetype_id" \
+              "$project_id" \
+              "$priority_id" \
+              "$description")
+      auth=echo -n "${{ inputs.jira_token }}" | base64
+      curl -i -X POST \
+          -H "Authorization: Basic $auth" \ \
+          -H "Content-Type:application/json" \
+          -H "X-Atlassian-Token:no-check" \
+          "${{ inputs.jira_url }}" \
+          -d \
+          "$payload"
+    shell: bash              
