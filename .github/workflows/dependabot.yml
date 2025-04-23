@@ -1,0 +1,33 @@
+name: Create Jira Tickets for Dependabot
+
+on:
+  pull_request:
+    branches:
+      - dev # Or your default branch (e.g., main, master)
+    paths:
+      - "**/package.json" # Or any file that Dependabot updates
+      # Add other file patterns that Dependabot updates in your project
+env:
+  JIRA_URL: "https://https://brandlive.atlassian.net"
+  JIRA_PROJECT: "OP"
+
+jobs:
+  create_jira_tickets:
+    if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create Jira Ticket
+        uses: brandlive1941/action-jira-integration@v1.0.0  # Use the latest version
+        with:
+          action: "create"
+          token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
+          jira_url: ${{ env.JIRA_URL }}
+          project: ${{ env.JIRA_PROJECT }} # Replace with your Jira project key
+          issue_type: "Bug" # Or "Story", "Task", etc.
+          summary: "[Dependabot] Update dependencies" 
+          description: |
+            Dependabot has created a pull request to update dependencies.
+            PR: ${{ github.event.pull_request.html_url }}
+            Branch: ${{ github.head_ref }}
+            Repository: ${{ github.repository }}
+          priority: "Medium" # Or "High", "Low", etc.
