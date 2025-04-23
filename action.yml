@@ -38,44 +38,29 @@ runs:
       priority_id="${{ inputs.priority }}"
       description="${{ inputs.description }}"
       summary="${{ inputs.summary }}"
-      template='{
-
+      json='{
         "fields": {
-          "summary": "%s",
-          "issuetype": {
-            "id": "%s"
-          },
           "project": {
+            "key": "%s"
+          },
+          "summary": "%s",
+          "description": "%s",
+          "issuetype": {
             "id": "%s"
           },
           "priority": {
             "id": "%s"
-          },
-          
-          "description": {
-            "type": "doc",
-            "version": 1,
-            "content": [
-              {
-                "type": "paragraph",
-                "content": [
-                  {
-                    "text": "%s",
-                    "type": "text"
-                  }
-                ]
-              }
-            ]
           }
         }
       }'
 
-      payload=$(printf "$template" \
+      payload=$(printf "$json" \
               "$summary" \
               "$issuetype_id" \
               "$project_id" \
               "$priority_id" \
               "$description")
+              
       auth="echo -n ${{ inputs.jira_token }} | base64"
       curl -i -X POST \
           -H "Authorization: Basic $auth" \ \
