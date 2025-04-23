@@ -55,11 +55,11 @@ runs:
       }'
 
       payload=$(printf "$json" \
-              "$summary" \
-              "$issuetype_id" \
               "$project_id" \
-              "$priority_id" \
-              "$description")
+              "$summary" \
+              "$description" \
+              "$issuetype_id" \
+              "$priority_id")
       echo "Payload: $payload"
       auth="echo -n ${{ inputs.jira_token }} | base64"
       curl -i -X POST \
