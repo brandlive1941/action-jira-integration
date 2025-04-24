@@ -60,7 +60,7 @@ runs:
               "$description" \
               "$issuetype_id" \
               "$priority_id")
-      echo "Payload: $payload"
+      echo -n "Payload: $payload"
       auth="echo -n ${{ inputs.jira_token }} | base64"
       curl -i -X POST \
           -H "Authorization: Basic $auth" \ \
