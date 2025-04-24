@@ -44,7 +44,7 @@ runs:
             "key": "%s"
           },
           "summary": "%s",
-          "description": "%s",
+          "description": "'"%s"'",
           "issuetype": {
             "id": "%s"
           },
@@ -55,12 +55,12 @@ runs:
       }'
 
       payload=$(printf "$json" \
-              "$project_id" \
-              "$summary" \
-              "$description" \
-              "$issuetype_id" \
-              "$priority_id")
-      echo -n "Payload: $payload"
+        "$project_id" \
+        "$summary" \
+        "$description" \
+        "$issuetype_id" \
+        "$priority_id")
+      printf "%s\n" "$payload"
       auth="echo -n ${{ inputs.jira_token }} | base64"
       curl -i -X POST \
           -H "Authorization: Basic $auth" \ \
