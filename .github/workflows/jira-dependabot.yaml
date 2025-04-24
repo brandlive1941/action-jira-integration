@@ -23,5 +23,5 @@ jobs:
           project: ${{ vars.JIRA_PROJECT }} # Replace with your Jira project key
           issue_type: "Bug" # Or "Story", "Task", etc.
           summary: "[Dependabot] Update dependencies" 
-          description: "Dependabot has created a pull request to update dependencies.\nPR: ${{ github.event.pull_request.html_url }}\nBranch: ${{ github.head_ref }}\nRepository: ${{ github.repository }}"
+          description: "Dependabot has created a pull request to update dependencies.\\nPR: ${{ github.event.pull_request.html_url }}\\nBranch: ${{ github.head_ref }}\\nRepository: ${{ github.repository }}"
           priority: "Medium" # Or "High", "Low", etc.
