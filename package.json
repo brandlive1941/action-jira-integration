@@ -1,0 +1,51 @@
+{
+  "name": "action-jira-integration",
+  "version": "1.0.0",
+  "description": "github to jira integration",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brandlive1941/action-jira-integration.git"
+  },
+  "keywords": [
+    "gcp",
+    "cloudbuild",
+    "artifact",
+    "registry"
+  ],
+  "author": "drew.mercer@brandlive.com",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/brandlive1941/action-jira-integration/issues"
+  },
+  "homepage": "https://github.com/brandlive1941/action-jira-integration#readme",
+  "devDependencies": {
+    "@semantic-release/commit-analyzer": "^12.0.0",
+    "@semantic-release/github": "^8.0.8",
+    "@semantic-release/npm": "^11.0.2",
+    "git-cz": "^4.9.0",
+    "semantic-release": "^23.0.2"
+  },
+  "release": {
+    "branches": [
+      "main"
+    ]
+  },
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/github"
+  ],
+  "config": {
+    "commitizen": {
+      "path": "cz-conventional-changelog"
+    }
+  },
+  "dependencies": {
+    "commitizen": "^4.3.0"
+  }
+}

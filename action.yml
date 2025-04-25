@@ -1,0 +1,73 @@
+name: Jira Integration
+description: Github to Jira Integration Action
+author: 'drew.mercer@brandlive.com'
+inputs:
+  action:
+    description: 'Action to perform'
+    required: true
+  token: 
+    description: 'Jira API token in the form of user_email:api_token'
+    required: true
+  jira_url:
+    description: 'Jira URL of your instance'
+    required: true
+  project:
+    description: 'Jira project key'
+    required: true
+  issue_type:
+    description: 'Jira issue type'
+    required: false
+    default: "3"    # Medium
+  summary:
+    description: 'Jira issue summary'
+    required: false
+  description:
+    description: 'Jira issue description'
+    required: false
+  priority:
+    description: 'Jira issue priority'
+    required: false
+    default: "10004" # Bug
+
+runs:
+  using: "composite"
+  steps:
+  - id: create
+    if: ${{ inputs.action == 'create' }}
+    run: |
+      issuetype_id="${{ inputs.issue_type }}"
+      project_id="${{ inputs.project }}"
+      priority_id="${{ inputs.priority }}"
+      description="${{ inputs.description }}"
+      summary="${{ inputs.summary }}"
+      json='{
+        "fields": {
+          "project": {
+            "key": "%s"
+          },
+          "summary": "%s",
+          "description": "'"%s"'",
+          "issuetype": {
+            "id": "%s"
+          },
+          "priority": {
+            "id": "%s"
+          }
+        }
+      }'
+
+      payload=$(printf "$json" \
+        "$project_id" \
+        "$summary" \
+        "$description" \
+        "$issuetype_id" \
+        "$priority_id")
+      printf "%s\n" "$payload"
+
+      curl -i -X POST \
+        -u "${{ inputs.jira_token }}" \
+        -d "$payload" \
+        -H "Content-Type: application/json" \
+        -H "X-Atlassian-Token:no-check" \
+        ${{ inputs.jira_url }}/rest/api/2/issue
+    shell: bash              
