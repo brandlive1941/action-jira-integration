@@ -17,6 +17,7 @@ inputs:
   issue_type:
     description: 'Jira issue type'
     required: false
+    default: "3"    # Medium
   summary:
     description: 'Jira issue summary'
     required: false
@@ -26,6 +27,7 @@ inputs:
   priority:
     description: 'Jira issue priority'
     required: false
+    default: "10004" # Bug
 
 runs:
   using: "composite"
@@ -61,12 +63,11 @@ runs:
         "$issuetype_id" \
         "$priority_id")
       printf "%s\n" "$payload"
-      auth="echo -n ${{ inputs.jira_token }} | base64"
-      curl -i -X PUT \
-          -H "Authorization: Basic $auth" \ \
-          -H "Content-Type:application/json" \
-          -H "X-Atlassian-Token:no-check" \
-          "${{ inputs.jira_url }}/rest/api/2/issue/" \
-          -d \
-          "$payload"
+
+      curl -i -X POST \
+        -u "${{ secrets.JIRA_TOKEN }}" \
+        -d "$payload" \
+        -H "Content-Type: application/json" \
+        -H "X-Atlassian-Token:no-check" \
+      https://brandlive.atlassian.net/rest/api/2/issue
     shell: bash              
