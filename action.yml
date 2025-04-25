@@ -65,9 +65,9 @@ runs:
       printf "%s\n" "$payload"
 
       curl -i -X POST \
-        -u "${{ secrets.JIRA_TOKEN }}" \
+        -u "${{ inputs.jira_token }}" \
         -d "$payload" \
         -H "Content-Type: application/json" \
         -H "X-Atlassian-Token:no-check" \
-      https://brandlive.atlassian.net/rest/api/2/issue
+        ${{ inputs.jira_url }}/rest/api/2/issue
     shell: bash              
