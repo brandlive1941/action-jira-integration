@@ -63,9 +63,8 @@ runs:
         "$issuetype_id" \
         "$priority_id")
       printf "%s\n" "$payload"
-
       curl -i -X POST \
-        -u "${{ inputs.jira_token }}" \
+        -u "${{ inputs.token }}" \
         -d "$payload" \
         -H "Content-Type: application/json" \
         -H "X-Atlassian-Token:no-check" \
