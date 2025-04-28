@@ -17,7 +17,7 @@ inputs:
   issue_type:
     description: 'Jira issue type'
     required: false
-    default: "3"    # Medium
+    default: "10004"    # Medium
   summary:
     description: 'Jira issue summary'
     required: false
@@ -27,7 +27,7 @@ inputs:
   priority:
     description: 'Jira issue priority'
     required: false
-    default: "10004" # Bug
+    default: "3" # Bug
 
 runs:
   using: "composite"
