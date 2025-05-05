@@ -1,26 +1,31 @@
 name: Dependabot Jira Integration
 
 on:
-  workflow_dispatch: # Allows manual triggering of the workflow
-  pull_request:
+  pull_request_target:
     branches:
       - main # Or your default branch (e.g., main, master)
-    paths:
-      - "**/package.json" # Or any file that Dependabot updates
-      # Add other file patterns that Dependabot updates in your project
 
 jobs:
   create_jira_tickets:
     if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+    permissions:
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      - name: Dependabot metadata
+      - name: Fetch Dependabot metadata
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v2
+        with:
+          alert-lookup: true
+          compat-lookup: true
+          github-token: "${{ secrets.JIRA_GH_TOKEN }}"
+          skip-commit-verification: true
+          skip-verification: true
 
       - name: Issue Classification
         id: issue-classification
         run: |
+          echo "CVSS score: ${{ steps.dependabot-metadata.outputs.cvss }}"
           if [ "${{ steps.dependabot-metadata.outputs.cvss }}" < "4" ]; then
             echo "CVSS score is less than 4.0"
             echo "class=Low" >> "$GITHUB_OUTPUT"
@@ -42,22 +47,26 @@ jobs:
       - name: Description Formatter
         id: description-formatter
         run: |
-          description="Dependabot has created a pull request to update dependencies.
+          description=$(cat << EOF
+          Dependabot has created a pull request to update dependencies.
           PR: ${{ github.event.pull_request.html_url }}
           Branch: ${{ github.head_ref }}
           Repository: ${{ github.repository }}
           CVSS Classification: ${{ steps.issue-classification.outputs.class }}
           CVSS Score: ${{ steps.dependabot-metadata.outputs.cvss }}
-          To confirm the fix, apply the patch and provide testing steps to verify no existing features are broken."
-          echo "description=${description@Q}"
+          To confirm the fix, apply the patch and provide testing steps to verify no existing features are broken.
+          EOF
+          )
+          description="${description//$'\n'/'\\n'}"
+          echo "description=$description" >> "$GITHUB_OUTPUT"
           
       - name: Create Jira Ticket
-        uses: brandlive1941/action-jira-integration@main  # Use the latest version
+        uses: brandlive1941/action-jira-integration@jira_action  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
           jira_url: ${{ vars.JIRA_URL }}
           project: ${{ vars.JIRA_PROJECT }} # Replace with your Jira project key
-          summary: "${{ steps.issue-classification.outputs.class }} [Dependabot] Security update for ${{ steps.dependabot-metadata.outputs.package_name }}" 
+          summary: "${{ steps.issue-classification.outputs.class }} [Dependabot] Security update for ${{ github.repository }}" 
           description: "${{ steps.description-formatter.outputs.description }}"
           priority: ${{ steps.issue-classification.outputs.priority }} # Or "High", "Low", etc.

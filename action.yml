@@ -28,6 +28,9 @@ inputs:
     description: 'Jira issue priority'
     required: false
     default: "3" # Bug
+  label:
+    description: 'Jira issue label'
+    required: false
 
 runs:
   using: "composite"
@@ -35,11 +38,12 @@ runs:
   - id: create
     if: ${{ inputs.action == 'create' }}
     run: |
-      issuetype_id="${{ inputs.issue_type }}"
       project_id="${{ inputs.project }}"
-      priority_id="${{ inputs.priority }}"
-      description="${{ inputs.description }}"
       summary="${{ inputs.summary }}"
+      description="${{ inputs.description }}"
+      issuetype_id="${{ inputs.issue_type }}"
+      priority_id="${{ inputs.priority }}"
+      labels="${{ inputs.label }}"
       json='{
         "fields": {
           "project": {
@@ -53,6 +57,9 @@ runs:
           "priority": {
             "id": "%s"
           }
+          "labels": [
+            "%s"
+          ]
         }
       }'
 
