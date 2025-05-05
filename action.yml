@@ -56,7 +56,7 @@ runs:
           },
           "priority": {
             "id": "%s"
-          }
+          },
           "labels": [
             "%s"
           ]
