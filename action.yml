@@ -68,7 +68,7 @@ runs:
         "$summary" \
         "$description" \
         "$issuetype_id" \
-        "$priority_id") \
+        "$priority_id" \
         "$labels")
         
       printf "%s\n" "$payload"
