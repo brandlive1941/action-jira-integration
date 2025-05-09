@@ -28,11 +28,11 @@ inputs:
     description: 'Jira issue priority'
     required: false
     default: "3" # Bug
-  label:
-    description: 'Jira issue label'
-    required: false
   customer_impact_area:
     description: 'What customer impact area does this issue affect?'
+    required: false
+  label:
+    description: 'Jira issue label'
     required: false
 
 runs:
@@ -47,7 +47,7 @@ runs:
       issuetype_id="${{ inputs.issue_type }}"
       priority_id="${{ inputs.priority }}"
       labels="${{ inputs.label }}"
-      customfield_10400="${{ inputs.customer_impact_area }}
+      customfield_10400="${{ inputs.customer_impact_area }}"
       json='{
         "fields": {
           "project": {
