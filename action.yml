@@ -17,7 +17,7 @@ inputs:
   issue_type:
     description: 'Jira issue type'
     required: false
-    default: "10004"    # Medium
+    default: "10004"    # Bug
   summary:
     description: 'Jira issue summary'
     required: false
@@ -30,6 +30,9 @@ inputs:
     default: "3" # Bug
   label:
     description: 'Jira issue label'
+    required: false
+  customer_impact_area:
+    description: 'What customer impact area does this issue affect?'
     required: false
 
 runs:
@@ -44,6 +47,7 @@ runs:
       issuetype_id="${{ inputs.issue_type }}"
       priority_id="${{ inputs.priority }}"
       labels="${{ inputs.label }}"
+      customfield_10400="${{ inputs.customer_impact_area }}
       json='{
         "fields": {
           "project": {
@@ -56,6 +60,9 @@ runs:
           },
           "priority": {
             "id": "%s"
+          },
+          "customfield_10400": {
+            "value": "%s"
           },
           "labels": [
             "%s"
