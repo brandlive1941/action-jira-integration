@@ -108,7 +108,7 @@ runs:
             "id": "%s"
           },
           "priority": {
-            "id": "%s"
+            "name": "%s"
           },
           "labels": [
             "%s"
