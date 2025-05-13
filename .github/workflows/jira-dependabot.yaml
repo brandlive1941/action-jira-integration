@@ -1,55 +1,104 @@
 name: Dependabot Jira Integration
 
 on:
-  workflow_dispatch: # Allows manual triggering of the workflow
-  pull_request:
+  pull_request_target:
     branches:
       - main # Or your default branch (e.g., main, master)
-    paths:
-      - "**/package.json" # Or any file that Dependabot updates
-      # Add other file patterns that Dependabot updates in your project
+  workflow_dispatch:
 
 jobs:
   create_jira_tickets:
     if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
+    permissions:
+      pull-requests: read
     runs-on: ubuntu-latest
     steps:
-      - name: Dependabot metadata
+      - name: Fetch Dependabot metadata
         id: dependabot-metadata
         uses: dependabot/fetch-metadata@v2
+        with:
+          alert-lookup: true
+          compat-lookup: true
+          github-token: "${{ secrets.JIRA_GH_TOKEN }}"
+          skip-commit-verification: true
+          skip-verification: true
 
-      - name: Issue Classification
-        id: issue-classification
-        run: |
-          if [ "${{ steps.dependabot-metadata.outputs.cvss }}" < "4" ]; then
-            echo "CVSS score is less than 4.0"
-            echo "class=Low" >> "$GITHUB_OUTPUT"
-            echo "priority=2" >> "$GITHUB_OUTPUT"
-          elif [ "${{ steps.dependabot-metadata.outputs.cvss }}" < "7" ]; then
-            echo "CVSS score is between 4.0 and 7.0"
-            echo "class=Medium" >> "$GITHUB_OUTPUT"
-            echo "priority=3" >> "$GITHUB_OUTPUT"
-          elif [ "${{ steps.dependabot-metadata.outputs.cvss }}" < "9" ]; then
-            echo "CVSS score is greater than or equal to 7.0"
-            echo "class=High" >> "$GITHUB_OUTPUT"
-            echo "priority=4" >> "$GITHUB_OUTPUT"
-          else
-            echo "CVSS score is greater than or equal to 9.0"
-            echo "class=Critical" >> "$GITHUB_OUTPUT"
-            echo "priority=5" >> "$GITHUB_OUTPUT"
-          fi
+      - uses: actions/github-script@v7
+        id: get-alert
+        with:
+          github-token: "${{ secrets.JIRA_GH_TOKEN }}"
+          result-encoding: string
+          retries: 3
+          retry-exempt-status-codes: 400,401
+          script: |
+            const alerts = await github.rest.dependabot.listAlertsForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              per_page: 100,
+            });
 
+            let severity = null;
+            console.log(`Dependency names: ${{ steps.dependabot-metadata.outputs.dependency-names }}`);
+            const dependencyNames = '${{ steps.dependabot-metadata.outputs.dependency-names }}'
+            for (const alert of alerts.data) {
+              console.log(`Checking alert for dependency: ${alert.dependency.package.name}`);
+              if (alert.dependency.package.name.includes(dependencyNames)) {
+                
+                severity = alert.security_advisory.severity.toUpperCase();
+                description = alert.security_advisory.description.replace(/`|"|'/g, "");
+                cvss_score = alert.security_advisory.cvss.score;
+                console.log(`Found matching alert with severity: ${severity}`);
+                console.log(`Description: ${description}`);
+                console.log(`CVSS Score: ${cvss_score}`);
+                break;
+              }
+            }
+
+            if (severity !== null) {
+              core.setOutput('severity', severity);
+              switch (severity) {
+                case 'LOW':
+                  core.setOutput('priority', 'P3');
+                  break;
+                case 'MEDIUM':
+                  core.setOutput('priority', 'P2');
+                  break;
+                case 'HIGH':
+                  core.setOutput('priority', 'P1');
+                  break;
+                case 'CRITICAL':
+                  core.setOutput('priority', 'P0');
+                  break;
+              };
+              core.setOutput('description', description);
+              core.setOutput('cvss', cvss_score);
+            } else {
+              throw new Error("No matching Dependabot alert found for the given dependencies.");
+            }
+            
       - name: Description Formatter
         id: description-formatter
-        run: |
-          description="Dependabot has created a pull request to update dependencies.
+        env:
           PR: ${{ github.event.pull_request.html_url }}
-          Branch: ${{ github.head_ref }}
-          Repository: ${{ github.repository }}
-          CVSS Classification: ${{ steps.issue-classification.outputs.class }}
-          CVSS Score: ${{ steps.dependabot-metadata.outputs.cvss }}
-          To confirm the fix, apply the patch and provide testing steps to verify no existing features are broken."
-          echo "description=${description@Q}"
+          BRANCH: ${{ github.head_ref }}
+          REPO: ${{ github.repository }}
+          SEVERITY: ${{ steps.get-alert.outputs.severity }}
+          PRIORITY: ${{ steps.get-alert.outputs.priority }}
+          CVSS: ${{ steps.get-alert.outputs.cvss }}
+          DESCRIPTION: ${{ steps.get-alert.outputs.description }}
+        run: |
+          description=$(cat << EOF
+          Dependabot has created a pull request to update dependencies.
+          PR: $PR
+          Branch: $BRANCH
+          Severity: $SEVERITY
+          CVSS Score: $CVSS
+          Description: $DESCRIPTION
+          To confirm the fix, apply the patch and provide testing steps to verify no existing features are broken.
+          EOF
+          )
+          description="${description//$'\n'/'\\n'}"
+          echo "description=$description" >> "$GITHUB_OUTPUT"
           
       - name: Create Jira Ticket
         uses: brandlive1941/action-jira-integration@main  # Use the latest version
@@ -58,6 +107,7 @@ jobs:
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
           jira_url: ${{ vars.JIRA_URL }}
           project: ${{ vars.JIRA_PROJECT }} # Replace with your Jira project key
-          summary: "${{ steps.issue-classification.outputs.class }} [Dependabot] Security update for ${{ steps.dependabot-metadata.outputs.package_name }}" 
+          summary: "${{ steps.get-alert.outputs.severity }} severity [Dependabot] Security update for ${{ github.repository }}" 
           description: "${{ steps.description-formatter.outputs.description }}"
-          priority: ${{ steps.issue-classification.outputs.priority }} # Or "High", "Low", etc.
+          priority: ${{ steps.get-alert.outputs.priority}} # Or "High", "Low", etc.
+          label: "security" # Optional: Add a label to the Jira ticket

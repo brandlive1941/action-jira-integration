@@ -17,7 +17,7 @@ inputs:
   issue_type:
     description: 'Jira issue type'
     required: false
-    default: "3"    # Medium
+    default: "10004"    # Bug
   summary:
     description: 'Jira issue summary'
     required: false
@@ -27,19 +27,27 @@ inputs:
   priority:
     description: 'Jira issue priority'
     required: false
-    default: "10004" # Bug
+    default: "3" # Bug
+  customer_impact_area:
+    description: 'What customer impact area does this issue affect?'
+    required: false
+  label:
+    description: 'Jira issue label'
+    required: false
 
 runs:
   using: "composite"
   steps:
-  - id: create
-    if: ${{ inputs.action == 'create' }}
+  - id: create-jira-issue-bdev
+    if: ${{ (inputs.action == 'create') && (inputs.project == 'BDEV') }} # Bug
     run: |
-      issuetype_id="${{ inputs.issue_type }}"
       project_id="${{ inputs.project }}"
-      priority_id="${{ inputs.priority }}"
-      description="${{ inputs.description }}"
       summary="${{ inputs.summary }}"
+      description="${{ inputs.description }}"
+      issuetype_id="${{ inputs.issue_type }}"
+      priority_id="${{ inputs.priority }}"
+      customfield_10400="${{ inputs.customer_impact_area }}"
+      labels="${{ inputs.label }}"
       json='{
         "fields": {
           "project": {
@@ -52,7 +60,13 @@ runs:
           },
           "priority": {
             "id": "%s"
-          }
+          },
+          "customfield_10400": {
+            "value": "%s"
+          },
+          "labels": [
+            "%s"
+          ]
         }
       }'
 
@@ -61,13 +75,60 @@ runs:
         "$summary" \
         "$description" \
         "$issuetype_id" \
-        "$priority_id")
+        "$priority_id" \
+        "$customfield_10400" \
+        "$labels")
+        
       printf "%s\n" "$payload"
-
       curl -i -X POST \
-        -u "${{ inputs.jira_token }}" \
+        -u "${{ inputs.token }}" \
         -d "$payload" \
         -H "Content-Type: application/json" \
         -H "X-Atlassian-Token:no-check" \
         ${{ inputs.jira_url }}/rest/api/2/issue
-    shell: bash              
+    shell: bash
+
+  - id: create-jira-issue-ops
+    if: ${{ (inputs.action == 'create') && (inputs.project == 'OP') }} # Task
+    run: |
+      project_id="${{ inputs.project }}"
+      summary="${{ inputs.summary }}"
+      description="${{ inputs.description }}"
+      issuetype_id="${{ inputs.issue_type }}"
+      priority_id="${{ inputs.priority }}"
+      labels="${{ inputs.label }}"
+      json='{
+        "fields": {
+          "project": {
+            "key": "%s"
+          },
+          "summary": "%s",
+          "description": "'"%s"'",
+          "issuetype": {
+            "id": "%s"
+          },
+          "priority": {
+            "name": "%s"
+          },
+          "labels": [
+            "%s"
+          ]
+        }
+      }'
+
+      payload=$(printf "$json" \
+        "$project_id" \
+        "$summary" \
+        "$description" \
+        "$issuetype_id" \
+        "$priority_id" \
+        "$labels")
+
+      printf "%s\n" "$payload"
+      curl -i -X POST \
+        -u "${{ inputs.token }}" \
+        -d "$payload" \
+        -H "Content-Type: application/json" \
+        -H "X-Atlassian-Token:no-check" \
+        ${{ inputs.jira_url }}/rest/api/2/issue
+    shell: bash
