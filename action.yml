@@ -39,7 +39,7 @@ runs:
   using: "composite"
   steps:
   - id: create-jira-issue-bdev
-    if: ${{ inputs.action == 'create' }} && ${{ inputs.project_id == 'BDEV' }} # Bug
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'BDEV' }} # Bug
     run: |
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
@@ -89,7 +89,7 @@ runs:
     shell: bash
 
   - id: create-jira-issue-ops
-    if: ${{ inputs.action == 'create' }} && ${{ inputs.project_id == 'OPS' }} # Task
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'OP' }} # Task
     run: |
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
