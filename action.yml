@@ -38,8 +38,8 @@ inputs:
 runs:
   using: "composite"
   steps:
-  - id: create
-    if: ${{ inputs.action == 'create' }}
+  - id: create-jira-issue-bdev
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'BDEV' }} # Bug
     run: |
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
@@ -86,4 +86,49 @@ runs:
         -H "Content-Type: application/json" \
         -H "X-Atlassian-Token:no-check" \
         ${{ inputs.jira_url }}/rest/api/2/issue
-    shell: bash              
+    shell: bash
+
+  - id: create-jira-issue-ops
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'OPS' }} # Task
+    run: |
+      project_id="${{ inputs.project }}"
+      summary="${{ inputs.summary }}"
+      description="${{ inputs.description }}"
+      issuetype_id="${{ inputs.issue_type }}"
+      priority_id="${{ inputs.priority }}"
+      labels="${{ inputs.label }}"
+      json='{
+        "fields": {
+          "project": {
+            "key": "%s"
+          },
+          "summary": "%s",
+          "description": "'"%s"'",
+          "issuetype": {
+            "id": "%s"
+          },
+          "priority": {
+            "id": "%s"
+          },
+          "labels": [
+            "%s"
+          ]
+        }
+      }'
+
+      payload=$(printf "$json" \
+        "$project_id" \
+        "$summary" \
+        "$description" \
+        "$issuetype_id" \
+        "$priority_id" \
+        "$labels")
+        
+      printf "%s\n" "$payload"
+      curl -i -X POST \
+        -u "${{ inputs.token }}" \
+        -d "$payload" \
+        -H "Content-Type: application/json" \
+        -H "X-Atlassian-Token:no-check" \
+        ${{ inputs.jira_url }}/rest/api/2/issue
+    shell: bash
