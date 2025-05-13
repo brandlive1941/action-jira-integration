@@ -39,7 +39,7 @@ runs:
   using: "composite"
   steps:
   - id: create-jira-issue-bdev
-    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'BDEV' }} # Bug
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project_id == 'BDEV' }} # Bug
     run: |
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
@@ -89,7 +89,7 @@ runs:
     shell: bash
 
   - id: create-jira-issue-ops
-    if: ${{ inputs.action == 'create' }} && ${{ inputs.project == 'OPS' }} # Task
+    if: ${{ inputs.action == 'create' }} && ${{ inputs.project_id == 'OPS' }} # Task
     run: |
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
@@ -123,7 +123,7 @@ runs:
         "$issuetype_id" \
         "$priority_id" \
         "$labels")
-        
+
       printf "%s\n" "$payload"
       curl -i -X POST \
         -u "${{ inputs.token }}" \
