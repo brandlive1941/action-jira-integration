@@ -59,7 +59,7 @@ runs:
             "id": "%s"
           },
           "priority": {
-            "id": "%s"
+            "name": "%s"
           },
           "customfield_10400": {
             "value": "%s"
