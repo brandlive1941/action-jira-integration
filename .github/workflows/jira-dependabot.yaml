@@ -101,7 +101,7 @@ jobs:
           echo "description=$description" >> "$GITHUB_OUTPUT"
           
       - name: Create Jira Ticket
-        uses: brandlive1941/action-jira-integration@main  # Use the latest version
+        uses: brandlive1941/action-jira-integration@v1.3.0  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
