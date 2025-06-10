@@ -3,7 +3,7 @@ name: Dependabot Jira Integration
 on:
   pull_request_target:
     branches:
-      - main # Or your default branch (e.g., main, master)
+      - dev # Or your default branch (e.g., main, master)
   workflow_dispatch:
 
 jobs:
@@ -45,7 +45,7 @@ jobs:
               if (alert.dependency.package.name.includes(dependencyNames)) {
                 
                 severity = alert.security_advisory.severity.toUpperCase();
-                description = alert.security_advisory.description.replace(/`|"|'/g, "");
+                description = alert.security_advisory.summary.replace(/`|"|'/g, "");
                 cvss_score = alert.security_advisory.cvss.score;
                 console.log(`Found matching alert with severity: ${severity}`);
                 console.log(`Description: ${description}`);
@@ -101,12 +101,14 @@ jobs:
           echo "description=$description" >> "$GITHUB_OUTPUT"
           
       - name: Create Jira Ticket
-        uses: brandlive1941/action-jira-integration@v1.3.0  # Use the latest version
+        uses: brandlive1941/action-jira-integration@v1.2.2  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
           jira_url: ${{ vars.JIRA_URL }}
           project: ${{ vars.JIRA_PROJECT }} # Replace with your Jira project key
+          issue_type: "10002" # Task ticket type
+          customer_impact_area: ${{ vars.JIRA_CUSTOMER_IMPACT_AREA }} # Optional: Specify the customer impact area
           summary: "${{ steps.get-alert.outputs.severity }} severity [Dependabot] Security update for ${{ github.repository }}" 
           description: "${{ steps.description-formatter.outputs.description }}"
           priority: ${{ steps.get-alert.outputs.priority}} # Or "High", "Low", etc.
