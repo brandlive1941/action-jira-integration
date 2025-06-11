@@ -114,7 +114,7 @@ jobs:
           priority: ${{ steps.get-alert.outputs.priority}} # Or "High", "Low", etc.
           label: "security" # Optional: Add a label to the Jira ticket
 
-      - name: Create Jira Ticket
+      - name: Test Create Ticket
         uses: brandlive1941/action-jira-integration  # Use the latest version
         if: github.actor != 'dependabot[bot]' # Only run for Dependabot PRs
         with:
