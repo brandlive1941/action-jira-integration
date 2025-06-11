@@ -119,7 +119,7 @@ jobs:
     if: github.actor != 'dependabot[bot]' # Only run for non Dependabot PRs
     steps:
       - name: Test Create Ticket
-        uses: brandlive1941/action-jira-integration@  # Use the latest version
+        uses: brandlive1941/action-jira-integration@main  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
