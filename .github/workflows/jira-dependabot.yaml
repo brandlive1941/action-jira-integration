@@ -100,7 +100,7 @@ jobs:
           echo "description=$description" >> "$GITHUB_OUTPUT"
           
       - name: Create Jira Ticket
-        uses: brandlive1941/action-jira-integration  # Use the latest version
+        uses: brandlive1941/action-jira-integration@v1  # Use the latest version
         if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
         with:
           action: "create"
@@ -115,7 +115,7 @@ jobs:
           label: "security" # Optional: Add a label to the Jira ticket
 
       - name: Test Create Ticket
-        uses: brandlive1941/action-jira-integration  # Use the latest version
+        uses: brandlive1941/action-jira-integration@${{ github.sha }}  # Use the latest version
         if: github.actor != 'dependabot[bot]' # Only run for Dependabot PRs
         with:
           action: "create"
