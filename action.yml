@@ -34,6 +34,10 @@ inputs:
   label:
     description: 'Jira issue label'
     required: false
+  dry_run:
+    description: 'Dry run mode, if true, will not create the issue'
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -101,7 +105,15 @@ runs:
         "$customfield_10163" \
         "$labels")
         
+      # Debugging output
       printf "%s\n" "$payload"
+
+      if [ "${{ inputs.dry_run }}" == "true" ]; then
+        echo "Dry run mode enabled, not creating issue."
+        exit 0
+      fi
+
+      # Create the Jira issue
       curl -i -X POST \
         -u "${{ inputs.token }}" \
         -d "$payload" \
@@ -146,7 +158,15 @@ runs:
         "$priority_id" \
         "$labels")
 
+      # Debugging output
       printf "%s\n" "$payload"
+
+      if [ "${{ inputs.dry_run }}" == "true" ]; then
+        echo "Dry run mode enabled, not creating issue."
+        exit 0
+      fi
+
+      # Create the Jira issue
       curl -i -X POST \
         -u "${{ inputs.token }}" \
         -d "$payload" \
