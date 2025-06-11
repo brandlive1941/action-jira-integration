@@ -10,6 +10,7 @@ jobs:
     permissions:
       pull-requests: read
     runs-on: ubuntu-latest
+    if: github.actor == 'dependabot[bot]' # Only run for Dependabot PRs
     steps:
       - name: Fetch Dependabot metadata
         id: dependabot-metadata
@@ -113,9 +114,12 @@ jobs:
           priority: ${{ steps.get-alert.outputs.priority}} # Or "High", "Low", etc.
           label: "security" # Optional: Add a label to the Jira ticket
 
+  test_create_jira_ticket:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]' # Only run for non Dependabot PRs
+    steps:
       - name: Test Create Ticket
-        uses: brandlive1941/action-jira-integration@main  # Use the latest version
-        if: github.actor != 'dependabot[bot]' # Only run for Dependabot PRs
+        uses: brandlive1941/action-jira-integration@  # Use the latest version
         with:
           action: "create"
           token: ${{ secrets.JIRA_TOKEN }} # Store your Jira API token in GitHub Secrets
@@ -123,8 +127,8 @@ jobs:
           project: ${{ vars.JIRA_PROJECT }} # Replace with your Jira project key
           issue_type: "10002" # Task ticket type
           customer_impact_area: ${{ vars.JIRA_CUSTOMER_IMPACT_AREA }} # Optional: Specify the customer impact area
-          summary: "${{ steps.get-alert.outputs.severity }} severity [Dependabot] Security update for ${{ github.repository }}" 
-          description: "${{ steps.description-formatter.outputs.description }}"
-          priority: ${{ steps.get-alert.outputs.priority}} # Or "High", "Low", etc.
-          label: "security" # Optional: Add a label to the Jira ticket
+          summary: "testing ticket creation for ${{ github.repository }}" 
+          description: "testing ticket creation for ${{ github.repository }}" 
+          priority: "low" # Or "High", "Low", etc.
+          label: "devops" # Optional: Add a label to the Jira ticket
           dry_run: true
