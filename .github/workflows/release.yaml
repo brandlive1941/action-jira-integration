@@ -32,6 +32,7 @@ jobs:
         run: npm clean-install
 
       - name: Release
+        id: release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -39,3 +40,8 @@ jobs:
         with:
           extra_plugins: |
             semantic-release-major-tag
+
+      - name: Update major release tag
+        run: |
+          git tag -f ${{ steps.release.outputs.new_release_major_version }}
+          git push origin tag ${{ steps.release.outputs.new_release_major_version }}
