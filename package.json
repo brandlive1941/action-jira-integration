@@ -38,7 +38,8 @@
   "plugins": [
     "@semantic-release/commit-analyzer",
     "@semantic-release/release-notes-generator",
-    "@semantic-release/github"
+    "@semantic-release/github",
+    "@semantic-releease-major-tag"
   ],
   "config": {
     "commitizen": {
@@ -46,6 +47,7 @@
     }
   },
   "dependencies": {
-    "commitizen": "^4.3.0"
+    "commitizen": "^4.3.0",
+    "semantic-release-major-tag": "^0.3.2"
   }
 }

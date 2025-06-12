@@ -34,6 +34,10 @@ inputs:
   label:
     description: 'Jira issue label'
     required: false
+  dry_run:
+    description: 'Dry run mode, if true, will not create the issue'
+    required: false
+    default: "false"
 
 runs:
   using: "composite"
@@ -41,12 +45,30 @@ runs:
   - id: create-jira-issue-bdev
     if: ${{ (inputs.action == 'create') && (inputs.project == 'BDEV') }} # Bug
     run: |
+      case "${{ inputs.priority }}" in
+        "1" | "Critical" | "P0")
+          security_issue_rating="critical" 
+          ;;
+        "2" | "High" | "P1")
+          security_issue_rating="high" 
+          ;;
+        "3" | "Medium" | "P2")
+          security_issue_rating="medium" 
+          ;;
+        "4" | "Low" | "P3")
+          security_issue_rating="low" 
+          ;;
+        *)
+          security_issue_rating="informational" 
+          ;;
+      esac
       project_id="${{ inputs.project }}"
       summary="${{ inputs.summary }}"
       description="${{ inputs.description }}"
       issuetype_id="${{ inputs.issue_type }}"
       priority_id="${{ inputs.priority }}"
       customfield_10400="${{ inputs.customer_impact_area }}"
+      customfield_10163=security_issue_rating
       labels="${{ inputs.label }}"
       json='{
         "fields": {
@@ -64,6 +86,9 @@ runs:
           "customfield_10400": {
             "value": "%s"
           },
+          "customfield_10163": {
+            "value": "%s"
+          },
           "labels": [
             "%s"
           ]
@@ -77,9 +102,18 @@ runs:
         "$issuetype_id" \
         "$priority_id" \
         "$customfield_10400" \
+        "$customfield_10163" \
         "$labels")
         
+      # Debugging output
       printf "%s\n" "$payload"
+
+      if [ "${{ inputs.dry_run }}" == "true" ]; then
+        echo "Dry run mode enabled, not creating issue."
+        exit 0
+      fi
+
+      # Create the Jira issue
       curl -i -X POST \
         -u "${{ inputs.token }}" \
         -d "$payload" \
@@ -124,7 +158,15 @@ runs:
         "$priority_id" \
         "$labels")
 
+      # Debugging output
       printf "%s\n" "$payload"
+
+      if [ "${{ inputs.dry_run }}" == "true" ]; then
+        echo "Dry run mode enabled, not creating issue."
+        exit 0
+      fi
+
+      # Create the Jira issue
       curl -i -X POST \
         -u "${{ inputs.token }}" \
         -d "$payload" \
