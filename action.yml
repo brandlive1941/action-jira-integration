@@ -47,19 +47,19 @@ runs:
     run: |
       case "${{ inputs.priority }}" in
         "1" | "Critical" | "P0")
-          security_issue_rating="critical" 
+          SECURITY_ISSUE_RATING="critical" 
           ;;
         "2" | "High" | "P1")
-          security_issue_rating="high" 
+          SECURITY_ISSUE_RATING="high" 
           ;;
         "3" | "Medium" | "P2")
-          security_issue_rating="medium" 
+          SECURITY_ISSUE_RATING="medium" 
           ;;
         "4" | "Low" | "P3")
-          security_issue_rating="low" 
+          SECURITY_ISSUE_RATING="low" 
           ;;
         *)
-          security_issue_rating="informational" 
+          SECURITY_ISSUE_RATING="informational" 
           ;;
       esac
       project_id="${{ inputs.project }}"
@@ -68,7 +68,7 @@ runs:
       issuetype_id="${{ inputs.issue_type }}"
       priority_id="${{ inputs.priority }}"
       customfield_10400="${{ inputs.customer_impact_area }}"
-      customfield_10163=security_issue_rating
+      customfield_10163=$SECURITY_ISSUE_RATING
       labels="${{ inputs.label }}"
       json='{
         "fields": {
