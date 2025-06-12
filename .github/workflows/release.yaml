@@ -44,4 +44,4 @@ jobs:
       - name: Update major release tag
         run: |
           git tag -f v${{ steps.release.outputs.new_release_major_version }}
-          git push origin tag v${{ steps.release.outputs.new_release_major_version }}
+          git push origin tag v${{ steps.release.outputs.new_release_major_version }} -f
